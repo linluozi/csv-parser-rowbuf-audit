@@ -22,6 +22,8 @@ def inline(text: str) -> str:
         lambda m: f'<img alt="{m.group(1)}" src="{RAW}{m.group(2)}">',
         t,
     )
+    # 尖括号自动链接 <https://...>：escape 之后尖括号已变成 &lt;&gt;，先还原成 <a>
+    t = re.sub(r"&lt;(https?://[^\s&]+)&gt;", r'<a href="\1">\1</a>', t)
     t = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', t)
     t = re.sub(r"`([^`]+)`", r"<code>\1</code>", t)
     t = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", t)
