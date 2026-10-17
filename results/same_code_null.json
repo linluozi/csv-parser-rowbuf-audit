@@ -1,0 +1,29 @@
+[
+  {
+    "name": "2 MiB 单行 / 4 KiB 块",
+    "iterationsPerRound": 2,
+    "rounds": 31,
+    "median": 0.945,
+    "p10": 0.811,
+    "p90": 1.215,
+    "noiseFloorPct": 21.5
+  },
+  {
+    "name": "7268 行 / 4 KiB 块",
+    "iterationsPerRound": 18,
+    "rounds": 31,
+    "median": 0.967,
+    "p10": 0.862,
+    "p90": 1.111,
+    "noiseFloorPct": 13.8
+  },
+  {
+    "name": "100 行（单块）",
+    "iterationsPerRound": 1018,
+    "rounds": 31,
+    "median": 0.994,
+    "p10": 0.851,
+    "p90": 1.093,
+    "noiseFloorPct": 14.9
+  }
+]

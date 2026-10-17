@@ -1,0 +1,24 @@
+{
+  "name": "csv-parser-rowbuf-audit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Independent audit of a third-party partial-row buffering optimization for mafintosh/csv-parser",
+  "license": "MIT",
+  "scripts": {
+    "audit:selftest": "node patch/selftest.js",
+    "audit:equivalence": "node audit/equivalence.js",
+    "audit:check": "node audit/equivalence.js --check",
+    "audit:concat": "node audit/concat.js",
+    "audit:opcount": "node audit/opcount.js",
+    "audit:noise": "node audit/samecode.js",
+    "audit:poison": "node audit/poison.js",
+    "audit:m8": "node audit/m8.js",
+    "audit:bench": "node audit/bench.js",
+    "audit:arms": "node audit/arms.js",
+    "audit:crosspoint": "node audit/crosspoint.js",
+    "audit:deterministic": "node patch/selftest.js && node audit/concat.js && node audit/opcount.js && node audit/poison.js && node audit/m8.js && node audit/equivalence.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

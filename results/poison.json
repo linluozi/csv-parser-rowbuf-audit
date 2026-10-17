@@ -1,0 +1,91 @@
+{
+  "originalSha1": "6fda27e4bd40e215978061b59b92f33a0e2a0a7a",
+  "mutants": 10,
+  "caught": 8,
+  "missedValid": [
+    "M6",
+    "M8"
+  ],
+  "results": [
+    {
+      "id": "M1",
+      "desc": "删掉 _flush 的 fragment 拼接（EOF 残留行丢弃）",
+      "applied": true,
+      "caught": true,
+      "verdict": "caught",
+      "output": "AssertionError [ERR_ASSERTION]: final row without trailing newline; chunk size=1 | + actual - expected"
+    },
+    {
+      "id": "M2",
+      "desc": "行起始偏移用 chunk 内偏移代替绝对偏移",
+      "applied": true,
+      "caught": true,
+      "verdict": "caught",
+      "output": "AssertionError [ERR_ASSERTION]: explicit headers and outputByteOffset; chunk size=1 | + actual - expected"
+    },
+    {
+      "id": "M3",
+      "desc": "跨块行的 byteOffset 传 0",
+      "applied": true,
+      "caught": true,
+      "verdict": "caught",
+      "output": "AssertionError [ERR_ASSERTION]: explicit headers and outputByteOffset; chunk size=1 | + actual - expected"
+    },
+    {
+      "id": "M4",
+      "desc": "单块快路径 end 少传一个（行尾被吃掉）",
+      "applied": true,
+      "caught": true,
+      "verdict": "caught",
+      "output": "AssertionError [ERR_ASSERTION]: quoted commas, CRLF, escaped quotes, multiline field; chunk size=4096 | + actual - expected"
+    },
+    {
+      "id": "M5",
+      "desc": "漏掉末尾残片入队",
+      "applied": true,
+      "caught": true,
+      "verdict": "caught",
+      "output": "AssertionError [ERR_ASSERTION]: quoted commas, CRLF, escaped quotes, multiline field; chunk size=1 | + actual - expected"
+    },
+    {
+      "id": "M6",
+      "desc": "maxRowBytes 判定失效（静默返回超长行）",
+      "applied": true,
+      "caught": false,
+      "verdict": "missed_valid",
+      "output": "PASS: 29 baseline parity checks + byte-offset and large-row checks"
+    },
+    {
+      "id": "M7",
+      "desc": "单块快路径条件反转（有残片时走单块路径）",
+      "applied": true,
+      "caught": true,
+      "verdict": "caught",
+      "output": "AssertionError [ERR_ASSERTION]: quoted commas, CRLF, escaped quotes, multiline field; chunk size=1 | + actual - expected"
+    },
+    {
+      "id": "M8",
+      "desc": "escape 判断 i !== 0 → i !== segmentStart",
+      "applied": true,
+      "caught": false,
+      "verdict": "missed_valid",
+      "output": "PASS: 29 baseline parity checks + byte-offset and large-row checks"
+    },
+    {
+      "id": "M9",
+      "desc": "_rowStartOffset 初值错（0 → 1）",
+      "applied": true,
+      "caught": true,
+      "verdict": "caught",
+      "output": "AssertionError [ERR_ASSERTION]: explicit headers and outputByteOffset; chunk size=1 | + actual - expected"
+    },
+    {
+      "id": "M10",
+      "desc": "删掉被测文件本身",
+      "applied": true,
+      "caught": true,
+      "verdict": "caught",
+      "output": "node:internal/modules/cjs/loader:1386\r |   throw err;\r"
+    }
+  ]
+}

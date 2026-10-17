@@ -1,0 +1,47 @@
+[
+  {
+    "label": "单块内第二行行首 escape",
+    "text": "h\na,b\n\\'x,y\n",
+    "upstream": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"a\",\"_1\":\"b\"},{\"h\":\"'x,y\"}],\"errors\":[]}",
+    "optimized": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"a\",\"_1\":\"b\"},{\"h\":\"'x,y\"}],\"errors\":[]}",
+    "mutated": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"a\",\"_1\":\"b\"},{\"h\":\"'x,y\\n\"}],\"errors\":[]}",
+    "optimizedMatchesUpstream": true,
+    "mutatedDiffers": true
+  },
+  {
+    "label": "单块内首行行首 escape",
+    "text": "h\n\\'x\n",
+    "upstream": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"'x\"}],\"errors\":[]}",
+    "optimized": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"'x\"}],\"errors\":[]}",
+    "mutated": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"'x\\n\"}],\"errors\":[]}",
+    "optimizedMatchesUpstream": true,
+    "mutatedDiffers": true
+  },
+  {
+    "label": "三行，第三行行首 escape",
+    "text": "a\nb\nc\\'d,e\n",
+    "upstream": "{\"ctorError\":null,\"headers\":[\"a\"],\"rows\":[{\"a\":\"b\"},{\"a\":\"c'd,e\"}],\"errors\":[]}",
+    "optimized": "{\"ctorError\":null,\"headers\":[\"a\"],\"rows\":[{\"a\":\"b\"},{\"a\":\"c'd,e\"}],\"errors\":[]}",
+    "mutated": "{\"ctorError\":null,\"headers\":[\"a\"],\"rows\":[{\"a\":\"b\"},{\"a\":\"c'd,e\"}],\"errors\":[]}",
+    "optimizedMatchesUpstream": true,
+    "mutatedDiffers": false
+  },
+  {
+    "label": "默认双引号，行首双引号",
+    "text": "h\n\"\"x\n",
+    "upstream": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"\\\"x\"}],\"errors\":[]}",
+    "optimized": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"\\\"x\"}],\"errors\":[]}",
+    "mutated": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"\\\"x\"}],\"errors\":[]}",
+    "optimizedMatchesUpstream": true,
+    "mutatedDiffers": false
+  },
+  {
+    "label": "自定义 quote+escape 跨块",
+    "text": "h\nab\\",
+    "upstream": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"ab\\\\\"}],\"errors\":[]}",
+    "optimized": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"ab\\\\\"}],\"errors\":[]}",
+    "mutated": "{\"ctorError\":null,\"headers\":[\"h\"],\"rows\":[{\"h\":\"ab\\\\\"}],\"errors\":[]}",
+    "optimizedMatchesUpstream": true,
+    "mutatedDiffers": false
+  }
+]

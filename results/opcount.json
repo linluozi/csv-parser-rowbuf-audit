@@ -1,0 +1,162 @@
+[
+  {
+    "name": "2 MiB 单行 / 4 KiB 块",
+    "inputBytes": 2097152,
+    "chunkBytes": 4096,
+    "chunks": 512,
+    "impls": {
+      "upstream": {
+        "subarrayCalls": 0,
+        "subarrayBytes": 0,
+        "concatCalls": 511,
+        "concatBytes": 537915392,
+        "concatAmplification": 256.498,
+        "avgSubarrayBytes": 0
+      },
+      "optimized": {
+        "subarrayCalls": 512,
+        "subarrayBytes": 2097152,
+        "concatCalls": 1,
+        "concatBytes": 2097152,
+        "concatAmplification": 1,
+        "avgSubarrayBytes": 4096
+      },
+      "submission": {
+        "subarrayCalls": 512,
+        "subarrayBytes": 2097152,
+        "concatCalls": 1,
+        "concatBytes": 2097152,
+        "concatAmplification": 1,
+        "avgSubarrayBytes": 4096
+      }
+    }
+  },
+  {
+    "name": "256 KiB 单行 / 4 KiB 块",
+    "inputBytes": 262144,
+    "chunkBytes": 4096,
+    "chunks": 64,
+    "impls": {
+      "upstream": {
+        "subarrayCalls": 0,
+        "subarrayBytes": 0,
+        "concatCalls": 63,
+        "concatBytes": 8515584,
+        "concatAmplification": 32.484,
+        "avgSubarrayBytes": 0
+      },
+      "optimized": {
+        "subarrayCalls": 64,
+        "subarrayBytes": 262144,
+        "concatCalls": 1,
+        "concatBytes": 262144,
+        "concatAmplification": 1,
+        "avgSubarrayBytes": 4096
+      },
+      "submission": {
+        "subarrayCalls": 64,
+        "subarrayBytes": 262144,
+        "concatCalls": 1,
+        "concatBytes": 262144,
+        "concatAmplification": 1,
+        "avgSubarrayBytes": 4096
+      }
+    }
+  },
+  {
+    "name": "7268 行 / 4 KiB 块",
+    "inputBytes": 77732,
+    "chunkBytes": 4096,
+    "chunks": 19,
+    "impls": {
+      "upstream": {
+        "subarrayCalls": 0,
+        "subarrayBytes": 0,
+        "concatCalls": 16,
+        "concatBytes": 131072,
+        "concatAmplification": 1.686,
+        "avgSubarrayBytes": 0
+      },
+      "optimized": {
+        "subarrayCalls": 7285,
+        "subarrayBytes": 77732,
+        "concatCalls": 16,
+        "concatBytes": 172,
+        "concatAmplification": 0.002,
+        "avgSubarrayBytes": 10.7
+      },
+      "submission": {
+        "subarrayCalls": 32,
+        "subarrayBytes": 172,
+        "concatCalls": 16,
+        "concatBytes": 172,
+        "concatAmplification": 0.002,
+        "avgSubarrayBytes": 5.4
+      }
+    }
+  },
+  {
+    "name": "100 行（单块）",
+    "inputBytes": 684,
+    "chunkBytes": 4096,
+    "chunks": 1,
+    "impls": {
+      "upstream": {
+        "subarrayCalls": 0,
+        "subarrayBytes": 0,
+        "concatCalls": 0,
+        "concatBytes": 0,
+        "concatAmplification": 0,
+        "avgSubarrayBytes": 0
+      },
+      "optimized": {
+        "subarrayCalls": 101,
+        "subarrayBytes": 684,
+        "concatCalls": 0,
+        "concatBytes": 0,
+        "concatAmplification": 0,
+        "avgSubarrayBytes": 6.8
+      },
+      "submission": {
+        "subarrayCalls": 0,
+        "subarrayBytes": 0,
+        "concatCalls": 0,
+        "concatBytes": 0,
+        "concatAmplification": 0,
+        "avgSubarrayBytes": 0
+      }
+    }
+  },
+  {
+    "name": "10 万行 / 64 KiB 块",
+    "inputBytes": 1277787,
+    "chunkBytes": 65536,
+    "chunks": 20,
+    "impls": {
+      "upstream": {
+        "subarrayCalls": 0,
+        "subarrayBytes": 0,
+        "concatCalls": 17,
+        "concatBytes": 2195291,
+        "concatAmplification": 1.718,
+        "avgSubarrayBytes": 0
+      },
+      "optimized": {
+        "subarrayCalls": 100018,
+        "subarrayBytes": 1277787,
+        "concatCalls": 17,
+        "concatBytes": 221,
+        "concatAmplification": 0,
+        "avgSubarrayBytes": 12.8
+      },
+      "submission": {
+        "subarrayCalls": 34,
+        "subarrayBytes": 221,
+        "concatCalls": 17,
+        "concatBytes": 221,
+        "concatAmplification": 0,
+        "avgSubarrayBytes": 6.5
+      }
+    }
+  }
+]

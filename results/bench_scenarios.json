@@ -1,0 +1,335 @@
+[
+  {
+    "id": "A",
+    "name": "2 MiB 单行 / 4 KiB 块",
+    "note": "包自带 bench 场景",
+    "inputBytes": 2097152,
+    "chunkBytes": 4096,
+    "chunks": 512,
+    "iterationsPerRound": 3,
+    "rounds": 11,
+    "perCallMs": {
+      "upstream": 127.1049,
+      "optimized": 14.3383,
+      "fixed": 16.245
+    },
+    "cv": {
+      "upstream": 12.2,
+      "optimized": 20.7,
+      "fixed": 24.3
+    },
+    "ratios": {
+      "upstream/optimized": {
+        "median": 9.151,
+        "p10": 7.973,
+        "p90": 10.434
+      },
+      "upstream/fixed": {
+        "median": 7.918,
+        "p10": 6.773,
+        "p90": 9.328
+      },
+      "optimized/fixed": {
+        "median": 0.898,
+        "p10": 0.833,
+        "p90": 0.993
+      }
+    }
+  },
+  {
+    "id": "B",
+    "name": "2 MiB 单行 / 64 KiB 块",
+    "note": "fs 流默认高水位",
+    "inputBytes": 2097152,
+    "chunkBytes": 65536,
+    "chunks": 32,
+    "iterationsPerRound": 3,
+    "rounds": 11,
+    "perCallMs": {
+      "upstream": 23.3057,
+      "optimized": 15.5343,
+      "fixed": 15.0317
+    },
+    "cv": {
+      "upstream": 12.1,
+      "optimized": 13.1,
+      "fixed": 7.6
+    },
+    "ratios": {
+      "upstream/optimized": {
+        "median": 1.6,
+        "p10": 1.439,
+        "p90": 1.788
+      },
+      "upstream/fixed": {
+        "median": 1.614,
+        "p10": 1.517,
+        "p90": 1.765
+      },
+      "optimized/fixed": {
+        "median": 0.989,
+        "p10": 0.943,
+        "p90": 1.227
+      }
+    }
+  },
+  {
+    "id": "C",
+    "name": "256 KiB 单行 / 4 KiB 块",
+    "note": null,
+    "inputBytes": 262144,
+    "chunkBytes": 4096,
+    "chunks": 64,
+    "iterationsPerRound": 23,
+    "rounds": 11,
+    "perCallMs": {
+      "upstream": 4.0942,
+      "optimized": 1.9912,
+      "fixed": 2.1334
+    },
+    "cv": {
+      "upstream": 16.2,
+      "optimized": 16.3,
+      "fixed": 13.4
+    },
+    "ratios": {
+      "upstream/optimized": {
+        "median": 2.103,
+        "p10": 1.732,
+        "p90": 2.359
+      },
+      "upstream/fixed": {
+        "median": 2.064,
+        "p10": 1.524,
+        "p90": 2.489
+      },
+      "optimized/fixed": {
+        "median": 0.927,
+        "p10": 0.826,
+        "p90": 1.121
+      }
+    }
+  },
+  {
+    "id": "D",
+    "name": "7268 行 × 43 B / 4 KiB 块",
+    "note": "上游 large-dataset 量级",
+    "inputBytes": 77732,
+    "chunkBytes": 4096,
+    "chunks": 19,
+    "iterationsPerRound": 17,
+    "rounds": 11,
+    "perCallMs": {
+      "upstream": 3.7646,
+      "optimized": 3.1249,
+      "fixed": 2.7109
+    },
+    "cv": {
+      "upstream": 6,
+      "optimized": 8.3,
+      "fixed": 8.2
+    },
+    "ratios": {
+      "upstream/optimized": {
+        "median": 1.205,
+        "p10": 1.079,
+        "p90": 1.336
+      },
+      "upstream/fixed": {
+        "median": 1.351,
+        "p10": 1.236,
+        "p90": 1.453
+      },
+      "optimized/fixed": {
+        "median": 1.146,
+        "p10": 1.065,
+        "p90": 1.245
+      }
+    }
+  },
+  {
+    "id": "E",
+    "name": "7268 行 + outputByteOffset",
+    "note": null,
+    "inputBytes": 77732,
+    "chunkBytes": 4096,
+    "chunks": 19,
+    "iterationsPerRound": 16,
+    "rounds": 11,
+    "perCallMs": {
+      "upstream": 4.5764,
+      "optimized": 3.9007,
+      "fixed": 3.5022
+    },
+    "cv": {
+      "upstream": 11.2,
+      "optimized": 15.4,
+      "fixed": 9.7
+    },
+    "ratios": {
+      "upstream/optimized": {
+        "median": 1.137,
+        "p10": 1,
+        "p90": 1.328
+      },
+      "upstream/fixed": {
+        "median": 1.342,
+        "p10": 1.088,
+        "p90": 1.564
+      },
+      "optimized/fixed": {
+        "median": 1.143,
+        "p10": 1.07,
+        "p90": 1.338
+      }
+    }
+  },
+  {
+    "id": "F",
+    "name": "10 万行 × 13 B / 64 KiB 块",
+    "note": null,
+    "inputBytes": 1277787,
+    "chunkBytes": 65536,
+    "chunks": 20,
+    "iterationsPerRound": 1,
+    "rounds": 11,
+    "perCallMs": {
+      "upstream": 52.703,
+      "optimized": 49.6452,
+      "fixed": 43.0531
+    },
+    "cv": {
+      "upstream": 16.9,
+      "optimized": 25.6,
+      "fixed": 6.5
+    },
+    "ratios": {
+      "upstream/optimized": {
+        "median": 0.977,
+        "p10": 0.7,
+        "p90": 1.613
+      },
+      "upstream/fixed": {
+        "median": 1.224,
+        "p10": 1.114,
+        "p90": 1.46
+      },
+      "optimized/fixed": {
+        "median": 1.13,
+        "p10": 1.045,
+        "p90": 1.765
+      }
+    }
+  },
+  {
+    "id": "G",
+    "name": "100 行 × 40 B / 4 KiB 块（单块）",
+    "note": "小文件典型形态",
+    "inputBytes": 684,
+    "chunkBytes": 4096,
+    "chunks": 1,
+    "iterationsPerRound": 765,
+    "rounds": 11,
+    "perCallMs": {
+      "upstream": 0.0539,
+      "optimized": 0.0519,
+      "fixed": 0.0481
+    },
+    "cv": {
+      "upstream": 5.6,
+      "optimized": 7.1,
+      "fixed": 8.7
+    },
+    "ratios": {
+      "upstream/optimized": {
+        "median": 1.047,
+        "p10": 0.929,
+        "p90": 1.144
+      },
+      "upstream/fixed": {
+        "median": 1.176,
+        "p10": 1.021,
+        "p90": 1.221
+      },
+      "optimized/fixed": {
+        "median": 1.09,
+        "p10": 0.988,
+        "p90": 1.185
+      }
+    }
+  },
+  {
+    "id": "H",
+    "name": "5 行 × 1 MiB JSON 单元格 / 64 KiB 块",
+    "note": "真实大单元格 CSV",
+    "inputBytes": 4214369,
+    "chunkBytes": 65536,
+    "chunks": 65,
+    "iterationsPerRound": 1,
+    "rounds": 11,
+    "perCallMs": {
+      "upstream": 38.8777,
+      "optimized": 31.9502,
+      "fixed": 32.0071
+    },
+    "cv": {
+      "upstream": 11.5,
+      "optimized": 5.9,
+      "fixed": 11.9
+    },
+    "ratios": {
+      "upstream/optimized": {
+        "median": 1.205,
+        "p10": 1.15,
+        "p90": 1.33
+      },
+      "upstream/fixed": {
+        "median": 1.18,
+        "p10": 1.166,
+        "p90": 1.278
+      },
+      "optimized/fixed": {
+        "median": 0.998,
+        "p10": 0.96,
+        "p90": 1.059
+      }
+    }
+  },
+  {
+    "id": "I",
+    "name": "20 行 × 200 KiB JSON 单元格 / 64 KiB 块",
+    "note": null,
+    "inputBytes": 3130604,
+    "chunkBytes": 65536,
+    "chunks": 48,
+    "iterationsPerRound": 2,
+    "rounds": 11,
+    "perCallMs": {
+      "upstream": 27.9085,
+      "optimized": 25.0902,
+      "fixed": 23.6144
+    },
+    "cv": {
+      "upstream": 6.3,
+      "optimized": 9.3,
+      "fixed": 8
+    },
+    "ratios": {
+      "upstream/optimized": {
+        "median": 1.032,
+        "p10": 0.961,
+        "p90": 1.284
+      },
+      "upstream/fixed": {
+        "median": 1.074,
+        "p10": 1.061,
+        "p90": 1.251
+      },
+      "optimized/fixed": {
+        "median": 1.033,
+        "p10": 0.974,
+        "p90": 1.15
+      }
+    }
+  }
+]

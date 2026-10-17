@@ -1,0 +1,101 @@
+[
+  {
+    "name": "2 MiB 单行 / 4 KiB 块",
+    "chunks": 512,
+    "mediansMs": {
+      "upstream": 134.436,
+      "arm1_fragments_only": 12.607,
+      "arm2_fragments_fastpath": 16.385,
+      "arm3_skeleton": 7.001
+    },
+    "ratios": {
+      "upstream/arm1": {
+        "median": 10.605,
+        "p10": 7.167,
+        "p90": 11.024
+      },
+      "arm1/arm2": {
+        "median": 0.924,
+        "p10": 0.596,
+        "p90": 1
+      },
+      "upstream/arm2": {
+        "median": 7.43,
+        "p10": 5.957,
+        "p90": 10.374
+      },
+      "upstream/arm3": {
+        "median": 19.036,
+        "p10": 14.14,
+        "p90": 20.551
+      }
+    },
+    "parseSharePct": 94.8
+  },
+  {
+    "name": "256 KiB 单行 / 4 KiB 块",
+    "chunks": 64,
+    "mediansMs": {
+      "upstream": 4.104,
+      "arm1_fragments_only": 1.691,
+      "arm2_fragments_fastpath": 1.739,
+      "arm3_skeleton": 0.858
+    },
+    "ratios": {
+      "upstream/arm1": {
+        "median": 2.428,
+        "p10": 2.151,
+        "p90": 4.776
+      },
+      "arm1/arm2": {
+        "median": 0.936,
+        "p10": 0.915,
+        "p90": 1.122
+      },
+      "upstream/arm2": {
+        "median": 2.273,
+        "p10": 2.117,
+        "p90": 4.676
+      },
+      "upstream/arm3": {
+        "median": 4.421,
+        "p10": 3.921,
+        "p90": 9.269
+      }
+    },
+    "parseSharePct": 79.1
+  },
+  {
+    "name": "7268 行 × 43 B / 4 KiB 块",
+    "chunks": 19,
+    "mediansMs": {
+      "upstream": 2.387,
+      "arm1_fragments_only": 3.414,
+      "arm2_fragments_fastpath": 2.263,
+      "arm3_skeleton": 0.348
+    },
+    "ratios": {
+      "upstream/arm1": {
+        "median": 0.699,
+        "p10": 0.419,
+        "p90": 1.031
+      },
+      "arm1/arm2": {
+        "median": 1.325,
+        "p10": 0.834,
+        "p90": 2.079
+      },
+      "upstream/arm2": {
+        "median": 0.924,
+        "p10": 0.597,
+        "p90": 1.24
+      },
+      "upstream/arm3": {
+        "median": 6.588,
+        "p10": 5.561,
+        "p90": 8.118
+      }
+    },
+    "parseSharePct": 85.4
+  }
+]

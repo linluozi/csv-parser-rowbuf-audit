@@ -1,0 +1,142 @@
+[
+  {
+    "name": "2 MiB 单行 / 4 KiB 块",
+    "inputBytes": 2097152,
+    "chunkBytes": 4096,
+    "chunks": 512,
+    "impls": {
+      "upstream": {
+        "concatCalls": 511,
+        "copiedBytes": 537915392,
+        "copyAmplification": 256.5
+      },
+      "baseline": {
+        "concatCalls": 511,
+        "copiedBytes": 537915392,
+        "copyAmplification": 256.5
+      },
+      "optimized": {
+        "concatCalls": 1,
+        "copiedBytes": 2097152,
+        "copyAmplification": 1
+      },
+      "fixed": {
+        "concatCalls": 1,
+        "copiedBytes": 2097152,
+        "copyAmplification": 1
+      }
+    }
+  },
+  {
+    "name": "256 KiB 单行 / 4 KiB 块",
+    "inputBytes": 262144,
+    "chunkBytes": 4096,
+    "chunks": 64,
+    "impls": {
+      "upstream": {
+        "concatCalls": 63,
+        "copiedBytes": 8515584,
+        "copyAmplification": 32.48
+      },
+      "baseline": {
+        "concatCalls": 63,
+        "copiedBytes": 8515584,
+        "copyAmplification": 32.48
+      },
+      "optimized": {
+        "concatCalls": 1,
+        "copiedBytes": 262144,
+        "copyAmplification": 1
+      },
+      "fixed": {
+        "concatCalls": 1,
+        "copiedBytes": 262144,
+        "copyAmplification": 1
+      }
+    }
+  },
+  {
+    "name": "2 MiB 单行 / 64 KiB 块",
+    "inputBytes": 2097152,
+    "chunkBytes": 65536,
+    "chunks": 32,
+    "impls": {
+      "upstream": {
+        "concatCalls": 31,
+        "copiedBytes": 34537472,
+        "copyAmplification": 16.47
+      },
+      "baseline": {
+        "concatCalls": 31,
+        "copiedBytes": 34537472,
+        "copyAmplification": 16.47
+      },
+      "optimized": {
+        "concatCalls": 1,
+        "copiedBytes": 2097152,
+        "copyAmplification": 1
+      },
+      "fixed": {
+        "concatCalls": 1,
+        "copiedBytes": 2097152,
+        "copyAmplification": 1
+      }
+    }
+  },
+  {
+    "name": "7268 行 × 43 B / 4 KiB 块",
+    "inputBytes": 77732,
+    "chunkBytes": 4096,
+    "chunks": 19,
+    "impls": {
+      "upstream": {
+        "concatCalls": 16,
+        "copiedBytes": 131072,
+        "copyAmplification": 1.69
+      },
+      "baseline": {
+        "concatCalls": 16,
+        "copiedBytes": 131072,
+        "copyAmplification": 1.69
+      },
+      "optimized": {
+        "concatCalls": 16,
+        "copiedBytes": 172,
+        "copyAmplification": 0
+      },
+      "fixed": {
+        "concatCalls": 16,
+        "copiedBytes": 172,
+        "copyAmplification": 0
+      }
+    }
+  },
+  {
+    "name": "10 万行 × 13 B / 64 KiB 块",
+    "inputBytes": 1277787,
+    "chunkBytes": 65536,
+    "chunks": 20,
+    "impls": {
+      "upstream": {
+        "concatCalls": 17,
+        "copiedBytes": 2195291,
+        "copyAmplification": 1.72
+      },
+      "baseline": {
+        "concatCalls": 17,
+        "copiedBytes": 2195291,
+        "copyAmplification": 1.72
+      },
+      "optimized": {
+        "concatCalls": 17,
+        "copiedBytes": 221,
+        "copyAmplification": 0
+      },
+      "fixed": {
+        "concatCalls": 17,
+        "copiedBytes": 221,
+        "copyAmplification": 0
+      }
+    }
+  }
+]

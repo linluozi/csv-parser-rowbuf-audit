@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-10-17",
+  "upstreamSha1": "fc24cc943b40644a59440a68223c2e8bbe864e9b",
+  "fuzz": {
+    "cases": 228000,
+    "mismatches": 0,
+    "seeds": 300,
+    "optionSets": 19,
+    "chunkPatterns": 10
+  },
+  "boundaries": {
+    "cases": 464,
+    "mismatches": 0
+  },
+  "fixtures": {
+    "files": 24,
+    "cases": 1152,
+    "mismatches": 0
+  },
+  "totalCases": 229616,
+  "totalMismatches": 0
+}
