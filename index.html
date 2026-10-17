@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>csv-parser 部分行缓冲优化：独立审查</title>
+<meta name="description" content="对一个第三方 csv-parser 优化包的独立复核：229,616 组等价性验证、确定性操作计数、噪声底实测。">
+<style>
+:root{--ink:#2b2119;--paper:#faf6f0;--amber:#c8892b;--terra:#b4552f;
+--olive:#6b6b3a;--muted:#8a7a68;--line:#ddd2c4;--card:#fffdf9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+font:16px/1.78 -apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:52px 28px 120px}
+h1{font-size:2.02rem;line-height:1.32;letter-spacing:-.01em;margin:0 0 10px}
+h2{font-size:1.32rem;margin:2.6em 0 .8em;padding-bottom:.34em;
+border-bottom:2px solid var(--line)}
+h3{font-size:1.06rem;margin:1.8em 0 .6em;color:var(--terra)}
+p{margin:.85em 0}
+a{color:var(--terra);text-decoration:none;border-bottom:1px solid rgba(180,85,47,.32)}
+a:hover{border-bottom-color:var(--terra)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+code{background:#f2ece2;padding:.12em .4em;border-radius:4px;
+font:.87em/1.5 "SFMono-Regular",Consolas,"Liberation Mono",monospace}
+pre{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--amber);
+border-radius:6px;padding:16px 18px;overflow-x:auto;margin:1.1em 0}
+pre code{background:none;padding:0;font-size:.84em;line-height:1.65}
+blockquote{margin:1.4em 0;padding:14px 20px;background:var(--card);
+border-left:3px solid var(--terra);border-radius:0 6px 6px 0;color:#4a3d31}
+blockquote p{margin:0}
+img{display:block;max-width:100%;height:auto;margin:1.6em auto;
+border:1px solid var(--line);border-radius:8px;background:#fff;
+box-shadow:0 2px 14px rgba(43,33,25,.07)}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:.9rem;
+background:var(--card);border-radius:6px;overflow:hidden;
+box-shadow:0 1px 3px rgba(43,33,25,.05)}
+th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:#f2ece2;font-weight:600;font-size:.85rem;letter-spacing:.02em}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fdfaf4}
+ul,ol{padding-left:1.5em;margin:.9em 0}
+li{margin:.35em 0}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(250,246,240,.94);
+backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:860px;margin:0 auto;padding:11px 28px;display:flex;
+gap:13px;align-items:center;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.topbar a{color:var(--muted);border-bottom:none}
+.topbar a:hover{color:var(--terra)}
+.sep{opacity:.4}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.74rem;
+background:#f2ece2;color:var(--olive);border:1px solid var(--line);margin-left:6px}
+@media(max-width:640px){
+.wrap{padding:30px 18px 80px}
+h1{font-size:1.55rem}
+table{font-size:.79rem}
+th,td{padding:7px 9px}
+}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="inner">
+<a href="https://github.com/linluozi/csv-parser-rowbuf-audit">← 仓库</a><span class="sep">/</span>
+<a href="https://github.com/linluozi/csv-parser-rowbuf-audit/blob/main/patch/submission.js">patch/submission.js</a><span class="sep">/</span>
+<a href="https://github.com/linluozi/csv-parser-rowbuf-audit/tree/main/results">results/</a><span class="sep">/</span>
+<a href="https://github.com/linluozi/csv-parser-rowbuf-audit/tree/main/charts">charts/</a>
+<span style="margin-left:auto"><span class="tag">PUBLIC</span><span class="tag">MIT</span></span>
+</div></div>
+<div class="wrap">
+<h1 id="csv-parser-部分行缓冲优化-独立审查">csv-parser 部分行缓冲优化：独立审查</h1>
+<p>对一个第三方「优化包」的独立复核。包本身宣称把 <a href="https://github.com/mafintosh/csv-parser"><code>mafintosh/csv-parser</code></a> 的部分行缓冲从重复 <code>Buffer.concat</code> 改成碎片列表，并给出 3.72× 加速。</p>
+<p><strong>结论：优化方向是对的，行为是等价的，但包内交付版有两个必须修的问题——它每行多付一次 Buffer 视图分配，而且过不了上游 eslint。</strong> 修好后的版本在 <code>patch/submission.js</code>，已通过上游全部检查。</p>
+<p>审查对象：<code>csv-parser-row-buffer-optimization.zip</code>（15 文件，36 KB）</p>
+<p>上游：<code>mafintosh/csv-parser</code> v3.2.1，<code>index.js</code> sha1 <code>fc24cc943b40644a59440a68223c2e8bbe864e9b</code></p>
+<blockquote><p><strong>关于耗时数字的一条声明</strong>：本机常年挂着 60 个 node 进程，实测<strong>字节完全相同的两份代码之间也能测出 ±21% 的「差异」</strong>。因此本报告不把任何小于噪声底的耗时差当作结论；凡是需要判断「谁更快」的地方，都用确定性计数（调用次数、拷贝字节）代替秒表。耗时数字只保留「量级」和「区间跨不跨 1」两类用法。详见 <a href="#六为什么不拿秒表当证据">第六节</a>。</p></blockquote>
+<hr>
+<h2 id="一-先看最硬的一条-拷贝量">一、先看最硬的一条：拷贝量</h2>
+<p>秒表会骗人，<code>Buffer.concat</code> 的调用次数和累计拷贝字节不会。</p>
+<p><img alt="拷贝放大倍数" src="https://raw.githubusercontent.com/linluozi/csv-parser-rowbuf-audit/main/charts/copy-amplification.png"></p>
+<table><thead><tr><th>场景</th><th>upstream</th><th>优化版</th></tr></thead><tbody>
+<tr><td>2 MiB 单行 / 4 KiB 块</td><td>511 次，拷贝 <strong>513 MiB = 输入 256.5×</strong></td><td>1 次，<strong>2.0 MiB = 1.0×</strong></td></tr>
+<tr><td>256 KiB 单行 / 4 KiB 块</td><td>63 次，8.1 MiB = 32.5×</td><td>1 次，0.25 MiB = 1.0×</td></tr>
+<tr><td>2 MiB 单行 / 64 KiB 块</td><td>31 次，32.9 MiB = 16.5×</td><td>1 次，2.0 MiB = 1.0×</td></tr>
+<tr><td>7268 行 / 4 KiB 块</td><td>16 次，0.13 MiB = 1.7×</td><td>16 次，<strong>3.3 KiB</strong></td></tr>
+<tr><td>10 万行 / 64 KiB 块</td><td>17 次，2.1 MiB = 1.7×</td><td>17 次，<strong>0</strong></td></tr>
+</tbody></table>
+<p>包 README 里「O(N·k) 拷贝」的诊断是<strong>准确的</strong>，这条成立。</p>
+<hr>
+<h2 id="二-收益不能泛化-它只由-单行跨多少块-决定">二、收益不能泛化：它只由「单行跨多少块」决定</h2>
+<p><img alt="交叉点热力图" src="https://raw.githubusercontent.com/linluozi/csv-parser-rowbuf-audit/main/charts/crosspoint-heatmap.png"></p>
+<p>行长度 × chunk 尺寸扫描（每格校准到约 30 ms 批跑，逐轮比值中位数）：</p>
+<table><thead><tr><th>行长度 \ chunk</th><th>4 KiB</th><th>16 KiB</th><th>64 KiB</th><th>256 KiB</th><th>1 MiB</th></tr></thead><tbody>
+<tr><td>4 KiB</td><td>1.20×</td><td>0.97×</td><td>1.07×</td><td>1.02×</td><td>1.01×</td></tr>
+<tr><td>16 KiB</td><td>1.05×</td><td>1.10×</td><td>1.10×</td><td>1.16×</td><td>1.10×</td></tr>
+<tr><td>64 KiB</td><td><strong>1.63×</strong></td><td>1.17×</td><td>1.07×</td><td>1.12×</td><td>1.12×</td></tr>
+<tr><td>256 KiB</td><td><strong>2.04×</strong></td><td>1.30×</td><td>1.10×</td><td>1.11×</td><td>1.13×</td></tr>
+<tr><td>1 MiB</td><td><strong>3.11×</strong></td><td>1.63×</td><td>1.24×</td><td>1.13×</td><td>1.12×</td></tr>
+<tr><td>4 MiB</td><td><strong>14.45×</strong></td><td>4.45×</td><td>2.01×</td><td>1.33×</td><td>1.16×</td></tr>
+</tbody></table>
+<p>换个读法更清楚——横轴是单行跨越的块数：</p>
+<p><img alt="收益由跨块数决定" src="https://raw.githubusercontent.com/linluozi/csv-parser-rowbuf-audit/main/charts/crosspoint-lines.png"></p>
+<p><strong>读法</strong>：跨 1 块无收益；跨 4 块约 1.2–1.7×；跨 16 块约 1.6–3×；跨 512 块约 14×。</p>
+<p>包自称的 3.72× 只对应「一行 2 MiB 切 512 块」这一个点。</p>
+<p>（这张表的绝对值受噪声影响，但 4 MiB×4 KiB 与 4 KiB×4 KiB 之间差 12 倍，远超 ±21% 噪声底，趋势可信。）</p>
+<hr>
+<h2 id="三-场景扫描">三、场景扫描</h2>
+<p><img alt="场景扫描" src="https://raw.githubusercontent.com/linluozi/csv-parser-rowbuf-audit/main/charts/scenario-sweep.png"></p>
+<table><thead><tr><th>场景</th><th>upstream / 交付版</th><th>upstream / 可提交版</th></tr></thead><tbody>
+<tr><td>A 2 MiB 单行 / 4 KiB 块</td><td>9.15×</td><td>7.92×</td></tr>
+<tr><td>B 2 MiB 单行 / <strong>64 KiB 块</strong>（fs 默认水位）</td><td><strong>1.60×</strong></td><td>1.61×</td></tr>
+<tr><td>C 256 KiB 单行 / 4 KiB 块</td><td>2.10×</td><td>2.06×</td></tr>
+<tr><td>D 7268 行 × 43 B / 4 KiB 块</td><td>1.21×</td><td>1.35×</td></tr>
+<tr><td>E 同上 + <code>outputByteOffset</code></td><td>1.14×</td><td>1.34×</td></tr>
+<tr><td>F 10 万行 / 64 KiB 块</td><td>0.98×</td><td>1.22×</td></tr>
+<tr><td>G 100 行（单块）</td><td>1.05×</td><td>1.18×</td></tr>
+<tr><td>H 5 行 × 1 MiB JSON 单元格</td><td>1.21×</td><td>1.18×</td></tr>
+<tr><td>I 20 行 × 200 KiB JSON 单元格</td><td>1.03×</td><td>1.07×</td></tr>
+</tbody></table>
+<p>能说的结论：真实 fs 流 64 KiB 水位下，2 MiB 单行约 <strong>1.6×</strong>；每行 200 KiB 的 JSON 单元格 CSV 约 <strong>1.03×</strong>（区间含 1，等于没收益）。D/E/F/G 之间的差别都在噪声内，不解读。</p>
+<hr>
+<h2 id="四-发现的问题">四、发现的问题</h2>
+<h3 id="p1-每行多付一次-buffer-视图分配">🔴 P1：每行多付一次 Buffer 视图分配</h3>
+<p>交付版 <code>_transform</code> 里这一行写在分支外：</p>
+<pre><code>const tail = data.subarray(segmentStart, i + 1)</code></pre>
+<p>每行都执行，但单块快路径那一支根本用不到 <code>tail</code>。<code>subarray</code> 是零拷贝视图，<strong>但不是免费</strong>——每次仍要分配一个 Buffer 对象。</p>
+<p>用确定性计数测（不依赖秒表）：</p>
+<p><img alt="subarray 调用次数" src="https://raw.githubusercontent.com/linluozi/csv-parser-rowbuf-audit/main/charts/subarray-count.png"></p>
+<table><thead><tr><th>场景</th><th>交付版 <code>subarray</code> 次数</th><th>可提交版</th></tr></thead><tbody>
+<tr><td>7268 行 / 4 KiB 块</td><td><strong>7,285</strong></td><td><strong>32</strong></td></tr>
+<tr><td>10 万行 / 64 KiB 块</td><td><strong>100,018</strong></td><td><strong>34</strong></td></tr>
+<tr><td>100 行（单块）</td><td><strong>101</strong></td><td><strong>0</strong></td></tr>
+<tr><td>2 MiB 单行 / 4 KiB 块</td><td>512</td><td>512（该场景两支都要分配，无差别）</td></tr>
+</tbody></table>
+<p><strong>这就是「每行一次」的直接量化</strong>：行数 N 时交付版多出约 N 次分配，可提交版只有「跨块的行」才分配（10 万行/20 块只有 34 次）。</p>
+<p><strong>修法</strong>：把分配挪进需要的分支。</p>
+<pre><code>if (this._rowChunks.length &gt; 0) {
+  this._rowChunks.push(data.subarray(segmentStart, i + 1))
+  const row = Buffer.concat(this._rowChunks)
+  this._rowChunks = []
+  this.parseLine(row, 0, row.length, this._rowStartOffset)
+} else {
+  this.parseLine(data, segmentStart, i + 1, this._rowStartOffset)
+}</code></pre>
+<p>单次 Buffer 视图分配约 30–60 ns。10 万行就是 3–6 ms 的固定开销，占 10 万行解析总耗时（数十毫秒）的百分之几到十几。<strong>方向确定，具体幅度本机测不准，不给倍数。</strong></p>
+<h3 id="p2-过不了上游-eslint">🔴 P2：过不了上游 eslint</h3>
+<p>在上游真仓库换上交付版，跑它自己的 <code>npx eslint index.js</code>：</p>
+<table><thead><tr><th></th><th>eslint 报错条数</th><th>ava</th></tr></thead><tbody>
+<tr><td>上游原版</td><td>1（既有欠债）</td><td>40 通过 + 1 既有快照失败</td></tr>
+<tr><td>包内交付版</td><td><strong>14</strong></td><td>40 通过 + 1 既有快照失败</td></tr>
+<tr><td>可提交版</td><td><strong>0</strong></td><td>40 通过 + 1 既有快照失败</td></tr>
+</tbody></table>
+<p>14 条全是 <code>object-property-newline</code>，来自把 <code>defaults</code> 与 <code>this.state</code> 压成多属性同行。上游 <code>.eslintrc.json</code> 用 <code>standard</code>，这条是 error 级 ⇒ PR 会被直接拒。</p>
+<h3 id="p3-测试套件有两处真盲区">⚠️ P3：测试套件有两处真盲区</h3>
+<p>反向喂毒 10 投 8 抓。两个漏检项都反证过「改动确实改变输出」，不是等价变更：</p>
+<p><img alt="喂毒矩阵" src="https://raw.githubusercontent.com/linluozi/csv-parser-rowbuf-audit/main/charts/poison-matrix.png"></p>
+<table><thead><tr><th>注入缺陷</th><th>结果</th></tr></thead><tbody>
+<tr><td><code>maxRowBytes</code> 判定失效</td><td><strong>漏检</strong>——上游报 <code>Row exceeds the maximum size</code>，毒版静默返回超长行</td></tr>
+<tr><td>escape 判断 <code>i !== 0</code> → <code>i !== segmentStart</code></td><td><strong>漏检</strong>——<code>h\na,b\n\&#x27;x,y\n</code>（quote=<code>&#x27;</code>, escape=<code>\</code>）下游出 <code>&#x27;x,y</code>，毒版出 <code>&#x27;x,y\n</code>（多吞换行）</td></tr>
+</tbody></table>
+<p>根因是语料里<strong>没有一组</strong>设 <code>maxRowBytes</code>，也<strong>没有一组</strong>同时用自定义 <code>quote</code>+<code>escape</code>。补两组即可到 10/10。</p>
+<h3 id="p4-包自带-bench-的两个方法学问题">⚠️ P4：包自带 bench 的两个方法学问题</h3>
+<ol>
+<li><strong>计时窗口含 chunk 重建</strong>：<code>makeChunks()</code> 写在计时里，2 MiB 场景白吞约 1.3 ms（占优化版耗时 9%）。</li>
+<li><strong>顺序跑不交错</strong>：本机跑出 7.13× 和 9.66× 两个数，比它报的 3.72× 还高——单点数字本身就不稳。</li>
+</ol>
+<h3 id="ℹ-p5-包内-optimization-diff-打不到上游">ℹ️ P5：包内 <code>optimization.diff</code> 打不到上游</h3>
+<p><code>git apply --check</code> 失败：diff 的上下文是包内重排版过的 <code>baseline/index.js</code>，不是上游原文。作为「相对本包 baseline 的变更记录」可以，但不能直接 apply 到 mafintosh/csv-parser。</p>
+<hr>
+<h2 id="五-归因-收益到底来自哪一臂">五、归因：收益到底来自哪一臂</h2>
+<p><img alt="相邻臂归因" src="https://raw.githubusercontent.com/linluozi/csv-parser-rowbuf-audit/main/charts/arm-attribution.png"></p>
+<table><thead><tr><th>场景</th><th>upstream → 仅碎片列表</th><th>碎片列表 → + 单块快路径</th><th>upstream → 交付版</th></tr></thead><tbody>
+<tr><td>2 MiB 单行 / 4 KiB 块</td><td><strong>10.61×</strong></td><td>0.92×（区间含 1）</td><td>7.43×</td></tr>
+<tr><td>256 KiB 单行 / 4 KiB 块</td><td><strong>2.43×</strong></td><td>0.94×</td><td>2.27×</td></tr>
+<tr><td>7268 行 / 4 KiB 块</td><td><strong>0.70×</strong></td><td>1.32×</td><td>0.92×</td></tr>
+</tbody></table>
+<p><strong>收益全部来自「消除重复 concat」这一臂；单块快路径在长行场景贡献为零（0.92×，区间含 1）。</strong></p>
+<p>而「只换碎片列表不加快路径」在真实形态下反而更慢（0.70×）——因为每行都多了一次数组 push + <code>Buffer.concat</code> 调用，而原本单块行的拷贝成本本来就低。这一臂的幅度同样受噪声影响，但方向与机制一致。</p>
+<p>掏空法骨架臂显示：2 MiB 场景解析占 94.8%，256 KiB 占 79.1%，7268 行占 85.4%。</p>
+<hr>
+<h2 id="六-为什么不拿秒表当证据">六、为什么不拿秒表当证据</h2>
+<p>这一节记录一次<strong>自我推翻</strong>。</p>
+<p>初版审查里我报过「交付版在普通 CSV 上稳定慢 11–12%」，p10–p90 整段落在 1 以下，看起来是显著负优化。后来做了最严的空对照——<strong>把同一个文件复制成两份、分别 require 成两个模块实例</strong>，它们字节完全相同：</p>
+<p><img alt="噪声底" src="https://raw.githubusercontent.com/linluozi/csv-parser-rowbuf-audit/main/charts/noise-floor.png"></p>
+<table><thead><tr><th>场景</th><th>同一份代码 A/B 的 p10–p90</th><th>噪声底</th></tr></thead><tbody>
+<tr><td>2 MiB 单行 / 4 KiB 块</td><td>0.811–1.215</td><td><strong>±21.5%</strong></td></tr>
+<tr><td>7268 行 / 4 KiB 块</td><td>0.862–1.111</td><td><strong>±13.8%</strong></td></tr>
+<tr><td>100 行（单块）</td><td>0.851–1.093</td><td><strong>±14.9%</strong></td></tr>
+</tbody></table>
+<p><strong>噪声底比声称的效应量还大 ⇒ 那些耗时结论全部撤回。</strong> 本机常驻 60 个 node 进程（其中一个累计吃了 584 秒 CPU），这是根因；这些进程不是本任务产生的，不擅自处理。</p>
+<p>因此 P1 的证据改用确定性计数（<code>subarray</code> 调用次数），它不受任何噪声影响。</p>
+<hr>
+<h2 id="七-等价性-这次改动是干净的">七、等价性：这次改动是干净的</h2>
+<p><img alt="等价性覆盖" src="https://raw.githubusercontent.com/linluozi/csv-parser-rowbuf-audit/main/charts/equivalence-coverage.png"></p>
+<p><strong>229,616 组比较，0 处不一致</strong>（对比真上游）：</p>
+<ul>
+<li>差分模糊 <strong>228,000</strong> 组：300 seed × 19 选项组合 × 10 分块模式 × 4 个实现</li>
+<li>逐字节切分边界穷举 <strong>464</strong> 组</li>
+<li>上游真实 fixtures <strong>1,152</strong> 组（24 个 CSV 文件 × 4 种块大小 × 3 组选项）</li>
+</ul>
+<p>覆盖的选项：<code>headers:false</code> / <code>outputByteOffset</code> / <code>strict</code> / <code>raw</code> / 自定义 <code>separator</code>·<code>quote</code>·<code>escape</code>·<code>newline</code> / <code>skipComments</code> / <code>skipLines</code> / <code>maxRowBytes</code> / <code>mapHeaders</code> / <code>mapValues</code>。</p>
+<p>baseline 真伪也验过：与上游原文的差异<strong>全部是换行/大括号风格</strong>，空对照实测 <code>upstream / baseline</code> = <strong>0.999×</strong>。</p>
+<hr>
+<h2 id="八-该不该采纳">八、该不该采纳</h2>
+<p><strong>可以采纳，但必须用 <code>patch/submission.js</code>，不是包里那份 <code>index.js</code>。</strong></p>
+<table><thead><tr><th>文件</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>upstream/index.js</code></td><td>上游 v3.2.1 原文，sha1 <code>fc24cc94…</code></td></tr>
+<tr><td><code>patch/baseline.js</code></td><td>包内 baseline（重排版副本，语义等价）</td></tr>
+<tr><td><code>patch/optimized.js</code></td><td><strong>包内交付版</strong>，sha1 <code>6fda27e4…</code>（含 P1/P2）</td></tr>
+<tr><td><code>patch/fixed.js</code></td><td>只修 P1（tail 惰性分配）</td></tr>
+<tr><td><code>patch/submission.js</code></td><td><strong>推荐采用</strong>：修 P1 + 过上游 lint，sha1 <code>a6dd9397…</code></td></tr>
+</tbody></table>
+<p>采纳后建议的收益表述（别再写单点倍数）：</p>
+<blockquote><p>收益取决于单行跨多少个输入块。跨 1 块：无收益。跨 4 块约 1.2–1.7×，跨 16 块约 1.6–3×，跨 128 块约 2–4×，跨 512 块约 8–14×。实际 fs 流 64 KiB 水位下，2 MiB 单行约 1.6×。</p></blockquote>
+<hr>
+<h2 id="复现">复现</h2>
+<p>需要 Node.js ≥ 18。确定性脚本不装任何依赖；只有 <code>upstream_ci.sh</code> 需要联网装上游 devDependencies。</p>
+<pre><code># 等价性（约 20 秒）——CI 用 --check 重算比对，不写文件
+node audit/equivalence.js
+node audit/equivalence.js --check
+
+# 硬证据：concat 调用次数与拷贝字节
+node audit/concat.js
+
+# 硬证据：subarray 调用次数（P1 的根因指标）
+node audit/opcount.js
+
+# 噪声底：同一份代码两份副本之间的差异
+node audit/samecode.js
+
+# 交错基准（约 30 秒）
+node audit/bench.js
+
+# 相邻臂归因
+node audit/arms.js
+
+# 交叉点扫描（约 30 秒）
+node audit/crosspoint.js
+
+# 反向喂毒
+node audit/poison.js
+
+# M8 精确判定
+node audit/m8.js
+
+# 上游 CI（联网，约 50 秒）
+bash audit/upstream_ci.sh submission
+
+# 重新生成图表（需要 matplotlib）
+python audit/make_figures.py</code></pre>
+<h3 id="测量方法-为什么这样测">测量方法（为什么这样测）</h3>
+<ul>
+<li><strong>同轮交错 + 逐轮比值中位数</strong>，每轮按拉丁方轮换实现顺序——固定顺序会让第三个臂吃到前两个臂留下的分配器状态。</li>
+<li><strong>预热 3 次后取 min-of-5 校准迭代次数</strong>，校准到约 30–40 ms/轮的批跑预算。单次 0.05 ms 的测量 CV 能到 100%。</li>
+<li><strong>计时窗口只包解析</strong>：chunk 副本在每个实现里预置 <code>轮数+3</code> 份，全部在窗口外构造（<code>parseCell</code> 会就地改 buffer）。</li>
+<li><strong>先测噪声底再谈效应</strong>：用字节相同的两份副本做空对照，比值区间就是这台机器的分辨率。</li>
+<li><strong>只报比值，绝对值只标量级</strong>；显著性看 p10–p90 是否跨 1，且幅度是否超过噪声底。</li>
+</ul>
+<hr>
+<h2 id="license">License</h2>
+<p>审查代码与文档为 MIT。<code>upstream/index.js</code>、<code>patch/*.js</code> 派生自 <a href="https://github.com/mafintosh/csv-parser"><code>mafintosh/csv-parser</code></a>，Copyright (c) 2014 Mathias Buus，MIT，全文见 <code>LICENSE</code>（与上游逐字节一致）。</p>
+</div>
+</body>
+</html>
