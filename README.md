@@ -4,6 +4,8 @@
 
 **结论：优化方向是对的，行为是等价的，但包内交付版有两个必须修的问题——它每行多付一次 Buffer 视图分配，而且过不了上游 eslint。** 修好后的版本在 `patch/submission.js`，已通过上游全部检查。
 
+**在线阅读版（排版更舒服）**：<https://linluozi.github.io/csv-parser-rowbuf-audit/>
+
 审查对象：`csv-parser-row-buffer-optimization.zip`（15 文件，36 KB）
 上游：`mafintosh/csv-parser` v3.2.1，`index.js` sha1 `fc24cc943b40644a59440a68223c2e8bbe864e9b`
 

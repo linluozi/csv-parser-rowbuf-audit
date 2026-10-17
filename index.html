@@ -70,6 +70,7 @@ th,td{padding:7px 9px}
 <h1 id="csv-parser-部分行缓冲优化-独立审查">csv-parser 部分行缓冲优化：独立审查</h1>
 <p>对一个第三方「优化包」的独立复核。包本身宣称把 <a href="https://github.com/mafintosh/csv-parser"><code>mafintosh/csv-parser</code></a> 的部分行缓冲从重复 <code>Buffer.concat</code> 改成碎片列表，并给出 3.72× 加速。</p>
 <p><strong>结论：优化方向是对的，行为是等价的，但包内交付版有两个必须修的问题——它每行多付一次 Buffer 视图分配，而且过不了上游 eslint。</strong> 修好后的版本在 <code>patch/submission.js</code>，已通过上游全部检查。</p>
+<p><strong>在线阅读版（排版更舒服）</strong>：&lt;https://linluozi.github.io/csv-parser-rowbuf-audit/&gt;</p>
 <p>审查对象：<code>csv-parser-row-buffer-optimization.zip</code>（15 文件，36 KB）</p>
 <p>上游：<code>mafintosh/csv-parser</code> v3.2.1，<code>index.js</code> sha1 <code>fc24cc943b40644a59440a68223c2e8bbe864e9b</code></p>
 <blockquote><p><strong>关于耗时数字的一条声明</strong>：本机常年挂着 60 个 node 进程，实测<strong>字节完全相同的两份代码之间也能测出 ±21% 的「差异」</strong>。因此本报告不把任何小于噪声底的耗时差当作结论；凡是需要判断「谁更快」的地方，都用确定性计数（调用次数、拷贝字节）代替秒表。耗时数字只保留「量级」和「区间跨不跨 1」两类用法。详见 <a href="#六为什么不拿秒表当证据">第六节</a>。</p></blockquote>
